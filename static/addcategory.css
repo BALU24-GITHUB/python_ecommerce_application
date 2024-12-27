@@ -1,0 +1,16 @@
+.btn{
+    display: block;
+    width:50px;
+    cursor: pointer;
+    border-radius: .5rem;
+    margin-top: 1rem;
+    padding:1rem 3rem;
+    background:green;
+    color: white;
+    text-align: center;
+}
+
+.btn:hover{
+    background: var(--black);
+
+}
