@@ -9,14 +9,28 @@ import razorpay
 RAZORPAY_KEY_ID="rzp_test_ieGX4rpGjiAEXm"
 RAZORPAY_KEY_SECRET="BTkRpOk94FIKiEdjDGOAzdKe"
 client=razorpay.Client(auth=(RAZORPAY_KEY_ID,RAZORPAY_KEY_SECRET))
-from itemid import itemidotp
-mydb=mysql.connector.connect(host='localhost',
-user='root',
-password='root',
-db='ecommerce'
-)
+from itemid import itemidotp  
+# mydb=mysql.connector.connect(host='localhost',
+# user='root',      
+# password='root',
+# db='ecommerce'
+# )
 app=Flask(__name__)
 app.secret_key='jnvnkdfjvndjs'
+
+db=os.environ['RDS_DB_NAME']
+user=os.environ['RDS_USERNAME']
+password=os.environ['RDS_PASSWORD']
+host=os.environ['RDS_HOSTNAME']
+port=os.environ['RDS_PORT']
+
+with mysql.connector.connect(host='host',user='user',password='password',db='db') as mydb:
+
+    cursor=mydb.cursor(buffered=True)
+    cursor.execute("CREATE TABLE if not exits `additems` (`itemid` varchar(30) NOT NULL,`name` varchar(30) DEFAULT NULL,`discription` longtext,`qty` varchar(20) DEFAULT NULL,`category` enum('electronics','grocery','fashion','home') DEFAULT NULL,`price` varchar(30) DEFAULT NULL,PRIMARY KEY (`itemid`))")
+    cursor.execute("CREATE TABLE if not exits`admin` (`username` varchar(30) DEFAULT NULL,`mobile` varchar(12) DEFAULT NULL,`email` varchar(50) DEFAULT NULL,`password` text)")
+    cursor.execute("CREATE TABLE if not exits `orders` (`order_id` bigint NOT NULL AUTO_INCREMENT,`itemid` varchar(30) NOT NULL,`item_name` longtext NOT NULL,`qty` int DEFAULT NULL,`total_price` bigint DEFAULT NULL,`user` varchar(255) NOT NULL,PRIMARY KEY (`order_id`),KEY `user` (`user`),KEY `itemid` (`itemid`),CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user`) REFERENCES `signup` (`Email`),CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`itemid`) REFERENCES `additems` (`itemid`))")
+    cursor.execute("CREATE TABLE if not exits`signup` (`username` varchar(50) DEFAULT NULL,`mobile` varchar(50) DEFAULT NULL,`Email` varchar(80) DEFAULT NULL,`address` varchar(50) DEFAULT NULL,`password` text,KEY `Email` (`Email`))")
 @app.route('/')
 def base():
     return render_template('welcome.html')
@@ -426,5 +440,3 @@ def search():
         cursor.execute('select * from additems where name=%s',[name])
         data=cursor.fetchall()
         return render_template('dashboard.html',items=data)
-if __name__=='__main__':
-    app.run(debug=True)
